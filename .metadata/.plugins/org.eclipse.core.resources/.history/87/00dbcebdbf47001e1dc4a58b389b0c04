@@ -1,0 +1,70 @@
+package com.postOffice.PostOfficeProject.impl;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.postOffice.PostOfficeProject.model.PostOfficeResponseBean;
+import com.postOffice.PostOfficeProject.model.PostOfficeBean;
+import com.postOffice.PostOfficeProject.service.IPostOffice;
+
+@Service("postofficeImpl")
+public class PostofficeImpl implements IPostOffice{
+
+private static Logger logger = Logger.getLogger(PostofficeImpl.class.getName());
+	
+	private static final String PINCODE_URL = "https://api.postalpincode.in/pincode/{pincode}";
+	private static final String CITY_URL = "https://api.postalpincode.in/postoffice/{city}";
+	
+	@Autowired
+	RestTemplate restTemplate;
+	@Override
+	public PostOfficeResponseBean fetchPostOfficeDetailsByCity(String city) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PostOfficeResponseBean fetchPostOfficeDetailsByPincode(String pincode) {
+		logger.info("Inside the Vetch Post Office Details By Pincode");
+		String url = PINCODE_URL.replace("{pincode}", pincode);
+		logger.info(url);
+		
+		ResponseEntity<PostOfficeResponseBean[]> pincodeResponseEntity = restTemplate.getForEntity(url, PostOfficeResponseBean[].class);
+		PostOfficeResponseBean[] pinodeResponseBeans = pincodeResponseEntity.getBody();
+		
+		PostOfficeResponseBean response = pinodeResponseBeans[0];
+		PostOfficeResponseBean postOfficeResponseBean = new PostOfficeResponseBean();
+		
+		List<PostOfficeBean> filteredPostOffices = new ArrayList<>();
+		
+		for(PostOfficeBean postOffice : response.getPostOfficeBean()) {
+			PostOfficeBean postOfficeSubList =  new PostOfficeBean();
+			postOfficeSubList.setName(postOffice.getName());
+			postOfficeSubList.setDescription(postOffice.getDescription());
+			postOfficeSubList.setBranchType(postOffice.getBranchType());
+			postOfficeSubList.setDeliveryStatus(postOffice.getDeliveryStatus());
+			postOfficeSubList.setCircle(postOffice.getCircle());
+			postOfficeSubList.setDistrict(postOffice.getDistrict());
+			postOfficeSubList.setDivision(postOffice.getDivision());
+			postOfficeSubList.setRegion(postOffice.getRegion());
+			postOfficeSubList.setBlock(postOffice.getBlock());
+			postOfficeSubList.setState(postOffice.getState());
+			postOfficeSubList.setCountry(postOffice.getCountry());
+			postOfficeSubList.setPincode(postOffice.getPincode());
+			
+			
+			filteredPostOffices.add(postOfficeSubList);			
+		}
+		postOfficeResponseBean.setMessage(response.getMessage());
+		postOfficeResponseBean.setStatus(response.getStatus());
+		postOfficeResponseBean.setPostOfficeBean(filteredPostOffices);
+		
+		
+		return postOfficeResponseBean;
+	}
+
+}
